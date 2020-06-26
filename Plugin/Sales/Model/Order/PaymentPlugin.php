@@ -27,17 +27,17 @@ class PaymentPlugin
     /**
      * Protected $orderPaymentExtensionFactory
      *
-     * @var \Magento\Sales\Api\Data\OrderPaymentExtensionInterface
+     * @var \Magento\Sales\Api\Data\OrderPaymentExtensionInterfaceFactory
      */
     protected $orderPaymentExtensionFactory;
 
     /**
      * PaymentPlugin constructor
      *
-     * @param \Magento\Sales\Api\Data\OrderPaymentExtensionInterface $orderPaymentExtensionFactory
+     * @param \Magento\Sales\Api\Data\OrderPaymentExtensionInterfaceFactory $orderPaymentExtensionFactory
      */
     public function __construct(
-        \Magento\Sales\Api\Data\OrderPaymentExtensionInterface $orderPaymentExtensionFactory
+        \Magento\Sales\Api\Data\OrderPaymentExtensionInterfaceFactory $orderPaymentExtensionFactory
     ) {
         $this->orderPaymentExtensionFactory = $orderPaymentExtensionFactory;
     }
