@@ -23,6 +23,8 @@ use Magento\Framework\DataObject;
 use Magento\Quote\Model\QuoteIdMaskFactory;
 use Magento\Sales\Model\Order\Email\Sender\OrderSender;
 use Magento\Sales\Model\OrderFactory;
+use Zend\Log\Writer\Stream;
+use Zend\Log\Logger;
 
 /**
  * PayPalPlus checkout controller
@@ -160,7 +162,13 @@ class Create extends \Magento\Framework\App\Action\Action
                     && version_compare($this->productMetadata->getVersion(), self::MAX_SEND_MAIL_VERSION, '<')
                 ) {
                     try {
-                        $this->orderSender->send($order);
+						// MK Fix multiple confirmation mails
+						if (!$order->getEmailSent()) {
+							$this->orderSender->send($order);
+							$this->printLog('Send Mail for (Create.php)');
+						} else {
+							$this->printLog('Order already sent (Create.php)');						
+						}
                     } catch (\Exception $e) {
                         $this->logger->critical($e);
                     }
@@ -186,6 +194,18 @@ class Create extends \Magento\Framework\App\Action\Action
                     $this->logger->log($e);
                 }
             }
+			// MK Fix success page
+			$this->checkoutSession->start();
+			$this->checkoutSession->setLastQuoteId($cartId);
+			$this->checkoutSession->setLastSuccessQuoteId($cartId);
+			$this->checkoutSession->setLastOrderId($order->getId());
+			$this->checkoutSession->setLastRealOrderId($order->getIncrementId());
+			$this->checkoutSession->setLastOrderStatus($order->getStatus());
+			
+			$this->printLog('C:getLastSuccessQuoteId:'.$this->checkoutSession->getLastSuccessQuoteId());
+			$this->printLog('C:getLastQuoteId:'.$this->checkoutSession->getLastQuoteId());
+			$this->printLog('C:getLastOrderId:'.$this->checkoutSession->getLastOrderId());
+			
             $result->setData('success', true);
             $result->setData('error', false);
 
@@ -202,4 +222,12 @@ class Create extends \Magento\Framework\App\Action\Action
             $this->_redirect('checkout/cart');
         }
     }
+	
+	public function printLog($log) { 
+       $writer = new Stream(BP . '/var/log/checkoutSuccess.log');
+       $logger = new Logger();
+       $logger->addWriter($writer);
+       $logger->info($log);
+	}	
+	
 }
