@@ -71,6 +71,11 @@ class MethodListPlugin
             $allowedMethods = [];
 
             foreach ($result as $method) {
+				// MKS  Remove paypal express
+                if (strpos($method->getCode(), 'paypal_') === 0) {
+                    continue;
+                }
+				
                 if ($method->getCode() == Payment::CODE
                     || $method->getCode() == self::AMAZON_PAYMENT
                     || !in_array($method->getCode(), $allowedPPPMethods)
