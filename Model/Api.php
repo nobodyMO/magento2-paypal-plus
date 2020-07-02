@@ -42,6 +42,8 @@ use PayPal\Api\PatchRequest;
 use PayPal\Api\Patch;
 use PayPal\Api\PaymentExecution;
 use PayPal\Exception\PayPalConnectionException;
+use Zend\Log\Writer\Stream;
+use Zend\Log\Logger;
 
 /**
  * Iways PayPal Rest Api wrapper
@@ -874,6 +876,22 @@ class Api
             ->setDetails($details)
             ->setTotal($total);
 
+		// MKS  Fix rounding errors with brutto prices
+		$calcAmount = $amount->getDetails()->getSubtotal() + $amount->getDetails()->getShipping() + $amount->getDetails()->getTax() + $amount->getDetails()->getHandlingFee() + $amount->getDetails()->getInsurance() - $amount->getDetails()-> getShippingDiscount();
+		if ($amount->getTotal() != $calcAmount) {
+			$oldSubTotal=$amount->getDetails()->getSubtotal();
+			if (is_numeric($amount->getDetails()->getShippingDiscount())) $olddiscount= ($amount->getDetails()->getShippingDiscount()); else $olddiscount=0.0;
+			if (is_numeric($amount->getDetails()->getShipping())) $shipping= ($amount->getDetails()->getShipping()); else $shipping=0.0;
+			if (is_numeric($amount->getDetails()->getTax())) $tax= ($amount->getDetails()->getTax()); else $tax=0.0;
+			if (is_numeric($amount->getDetails()->getHandlingFee())) $handlingFee= ($amount->getDetails()->getHandlingFee()); else $handlingFee=0.0;
+			if (is_numeric($amount->getDetails()->getInsurance())) $insurance= ($amount->getDetails()->getInsurance()); else $insurance=0.0;
+			
+			
+			$newdiscount=round((-1)*($amount->getTotal() - $oldSubTotal - $shipping - $tax - $handlingFee - $insurance),2);
+			$amount->getDetails()-> setShippingDiscount($newdiscount);
+			$this->printLog ("Correct ShippingDiscount Total: " . $amount->getTotal() . " from " . $olddiscount . " to " . $newdiscount . " Subtotal: " . $oldSubTotal . " Tax: " . $tax );
+		}
+
         return $amount;
     }
 
@@ -1039,4 +1057,12 @@ class Api
             return false;
         }
     }
+	
+	public function printLog($log) { 
+       $writer = new Stream(BP . '/var/log/checkout.log');
+       $logger = new Logger();
+       $logger->addWriter($writer);
+       $logger->info($log);
+	}	
+	
 }
