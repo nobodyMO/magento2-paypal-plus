@@ -1,5 +1,11 @@
 #  Magento 2 PayPal PLUS
 
+This is a fork of the iways paypal plus module. 
+I created this fork to fix some issues in in original version. 
+Iways has disabled the issue tracker and inores pull requests. 
+In version 1.3.2 are more than two critical bugs (ilegal class injection in create and webhook). These bugs prevent the use of the plugin with Magento 2.3.5.
+
+
 PayPal PLUS is a solution where PayPal offers PayPal, Credit Card, Direct Debit (ELV) and Pay Upon Invoice (Kauf auf Rechnung) as individual payment options on the payment selection page. These payment methods cover around 80% customer demand in Germany.
 
 No matter how customer chooses to pay, it is always a single PayPal transaction for merchant, including all resulting advantages like Seller Protection and easy refund.
