@@ -155,6 +155,7 @@ class Create extends \Magento\Framework\App\Action\Action
                 $quoteIdMask = $this->quoteIdMaskFactory->create()->load($cartId, 'quote_id');
                 $orderId = $this->guestCartManagement->placeOrder($quoteIdMask->getMaskedId());
             }
+			$this->printLog("Try to create order for $orderId , $cartId");
 
             if ($orderId) {
                 $order = $this->orderFactory->create()->load($orderId);
@@ -170,6 +171,7 @@ class Create extends \Magento\Framework\App\Action\Action
 							$this->printLog('Order already sent (Create.php)');						
 						}
                     } catch (\Exception $e) {
+						$this->printLog("Caught $e");
                         $this->logger->critical($e);
                     }
                 }
@@ -191,6 +193,7 @@ class Create extends \Magento\Framework\App\Action\Action
                         }
                     }
                 } catch (\Exception $e) {
+					$this->printLog("Caught $e");
                     $this->logger->log($e);
                 }
             }
@@ -218,6 +221,7 @@ class Create extends \Magento\Framework\App\Action\Action
             );
             $this->_redirect('checkout/onepage/success');
         } catch (\Exception $e) {
+ 			$this->printLog("Caught $e");
             $this->messageManager->addError($e->getMessage());
             $this->_redirect('checkout/cart');
         }
