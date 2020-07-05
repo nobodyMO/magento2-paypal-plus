@@ -325,7 +325,10 @@ class Api
      */
     public function createPayment($webProfile, $quote, $taxFailure = false)
     {
-        /**
+	// MKS Patch
+        $quote->setTotalsCollectedFlag(false)->collectTotals()->save();	
+
+	/**
          * Skip if grand total is zero
          */
         if ($quote->getBaseGrandTotal() == "0.0000") {
@@ -383,6 +386,9 @@ class Api
      */
     public function patchPayment($quote)
     {
+	// MKS Patch
+        $quote->setTotalsCollectedFlag(false)->collectTotals()->save();	
+	    
         if ($this->customerSession->getPayPalPaymentId()) {
             $payment = PayPalPayment::get($this->customerSession->getPayPalPaymentId(), $this->_apiContext);
             $patchRequest = new PatchRequest();
