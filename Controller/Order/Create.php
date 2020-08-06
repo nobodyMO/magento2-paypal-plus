@@ -110,6 +110,12 @@ class Create extends \Magento\Framework\App\Action\Action
      * @var \Magento\Framework\App\ProductMetadataInterface
      */
     protected $productMetadata;
+	
+    /**
+     * @var \Magento\Framework\App\ResponseFactory
+     */
+    protected $_responseFactory;
+	
 
     public function __construct(
         \Magento\Framework\App\Action\Context $context,
@@ -123,7 +129,8 @@ class Create extends \Magento\Framework\App\Action\Action
         OrderFactory $orderFactory,
         \Magento\Sales\Model\Order\Status\HistoryFactory $historyFactory,
         Session $customerSession,
-        \Magento\Framework\App\ProductMetadataInterface $productMetadata
+        \Magento\Framework\App\ProductMetadataInterface $productMetadata,
+        \Magento\Framework\App\ResponseFactory $responseFactory		
     ) {
         $this->logger = $logger;
         $this->checkoutSession = $checkoutSession;
@@ -136,6 +143,7 @@ class Create extends \Magento\Framework\App\Action\Action
         $this->orderFactory = $orderFactory;
         $this->historyFactory = $historyFactory;
         $this->productMetadata = $productMetadata;
+        $this->_responseFactory = $responseFactory;		
         parent::__construct($context);
     }
 
@@ -147,7 +155,8 @@ class Create extends \Magento\Framework\App\Action\Action
     public function execute()
     {
         try {
-            $cartId = $this->checkoutSession->getQuoteId();
+            $cartId = $this->checkoutSession->getQuoteId();		
+			$this->printLog("cartId $cartId");
             $result = new DataObject();
             if ($this->customerSession->isLoggedIn()) {
                 $orderId = $this->cartManagement->placeOrder($cartId);
@@ -219,11 +228,19 @@ class Create extends \Magento\Framework\App\Action\Action
                     'action' => $this
                 ]
             );
-            $this->_redirect('checkout/onepage/success');
+			$response = $this->_responseFactory->create();
+			$response->setRedirect('/checkout/onepage/success');
+			$response->setNoCacheHeaders();
+			return $response;			
+            //$this->_redirect('checkout/onepage/success');
         } catch (\Exception $e) {
  			$this->printLog("Caught $e");
             $this->messageManager->addError($e->getMessage());
-            $this->_redirect('checkout/cart');
+			$response = $this->_responseFactory->create();
+			$response->setRedirect('/checkout/cart');
+			$response->setNoCacheHeaders();
+			return $response;			
+            //$this->_redirect('checkout/cart');
         }
     }
 	
