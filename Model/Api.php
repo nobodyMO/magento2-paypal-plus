@@ -21,6 +21,8 @@ namespace Iways\PayPalPlus\Model;
 use Magento\Framework\App\Filesystem\DirectoryList;
 use Magento\Framework\Encryption\EncryptorInterface;
 use Magento\Quote\Model\Quote;
+use Magento\Quote\Model\QuoteIdToMaskedQuoteIdInterface;
+
 use PayPal\Api\Refund;
 use PayPal\Rest\ApiContext;
 use PayPal\Auth\OAuthTokenCredential;
@@ -175,6 +177,11 @@ class Api
     protected $urlBuilder;
 
     /**
+     * @var QuoteIdToMaskedQuoteIdInterface
+     */
+    private $quoteIdToMaskedQuoteId;
+	
+    /**
      * Prepare PayPal REST SDK ApiContent
      *
      * @param \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig
@@ -191,6 +198,8 @@ class Api
      * @param EncryptorInterface $encryptor
      * @param \Magento\Framework\View\Asset\Repository $assetRepo
      * @param \Magento\Framework\UrlInterface $urlBuilder
+     * @param \Magento\Quote\Model\QuoteIdToMaskedQuoteIdInterface $quoteIdToMaskedQuoteId
+	 
      */
     public function __construct(
         \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
@@ -206,7 +215,9 @@ class Api
         \Magento\Framework\Message\ManagerInterface $messageManager,
         EncryptorInterface $encryptor,
         \Magento\Framework\View\Asset\Repository $assetRepo,
-        \Magento\Framework\UrlInterface $urlBuilder
+        \Magento\Framework\UrlInterface $urlBuilder,
+        QuoteIdToMaskedQuoteIdInterface $quoteIdToMaskedQuoteId
+		
     ) {
         $this->scopeConfig = $scopeConfig;
         $this->registry = $registry;
@@ -222,6 +233,7 @@ class Api
         $this->encryptor = $encryptor;
         $this->assetRepo = $assetRepo;
         $this->urlBuilder = $urlBuilder;
+        $this->quoteIdToMaskedQuoteId = $quoteIdToMaskedQuoteId;		
         $this->setApiContext(null);
     }
 
@@ -325,6 +337,16 @@ class Api
      */
     public function createPayment($webProfile, $quote, $taxFailure = false)
     {
+	// generate masked quoteID as url parameter for create callback
+		$maskedId = null;
+        try {
+            $maskedId = $this->quoteIdToMaskedQuoteId->execute($quote->getId());
+			$this->printLog ("maskedId: " . $maskedId . " quoteId " . $quote->getId());
+			
+        } catch (NoSuchEntityException $exception) {
+            throw new LocalizedException(__('Current user does not have an active cart.'));
+        }
+	
 	// MKS Patch
         $quote->setTotalsCollectedFlag(false)->collectTotals()->save();	
 
@@ -348,7 +370,7 @@ class Api
         $transaction->setItemList($itemList);
 
         $redirectUrls = new RedirectUrls();
-        $redirectUrls->setReturnUrl($this->urlBuilder->getUrl('paypalplus/order/create'))
+        $redirectUrls->setReturnUrl($this->urlBuilder->getUrl('paypalplus/order/create?quote_id=' . $maskedId))
             ->setCancelUrl($this->urlBuilder->getUrl('paypalplus/checkout/cancel'));
 
         $payment = new PayPalPayment();
