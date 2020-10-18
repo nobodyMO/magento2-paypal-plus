@@ -23,6 +23,8 @@ use Magento\Framework\DataObject;
 use Magento\Quote\Model\QuoteIdMaskFactory;
 use Magento\Sales\Model\Order\Email\Sender\OrderSender;
 use Magento\Sales\Model\OrderFactory;
+use Magento\Framework\App\Request\Http;
+
 use Zend\Log\Writer\Stream;
 use Zend\Log\Logger;
 
@@ -116,6 +118,11 @@ class Create extends \Magento\Framework\App\Action\Action
      */
     protected $_responseFactory;
 	
+    /**
+     * @var \Magento\Framework\App\Request\Http
+     */
+	protected $request;
+	
 
     public function __construct(
         \Magento\Framework\App\Action\Context $context,
@@ -130,7 +137,8 @@ class Create extends \Magento\Framework\App\Action\Action
         \Magento\Sales\Model\Order\Status\HistoryFactory $historyFactory,
         Session $customerSession,
         \Magento\Framework\App\ProductMetadataInterface $productMetadata,
-        \Magento\Framework\App\ResponseFactory $responseFactory		
+        \Magento\Framework\App\ResponseFactory $responseFactory,
+		\Magento\Framework\App\Request\Http $request
     ) {
         $this->logger = $logger;
         $this->checkoutSession = $checkoutSession;
@@ -144,6 +152,7 @@ class Create extends \Magento\Framework\App\Action\Action
         $this->historyFactory = $historyFactory;
         $this->productMetadata = $productMetadata;
         $this->_responseFactory = $responseFactory;		
+		$this->request = $request;
         parent::__construct($context);
     }
 
@@ -157,13 +166,24 @@ class Create extends \Magento\Framework\App\Action\Action
         try {
             $cartId = $this->checkoutSession->getQuoteId();		
 			$this->printLog("cartId $cartId");
+			$maskedId=$this->request->getParam('quote_id');
+			if (substr($maskedId, -1)=='/') $maskedId=substr($maskedId, 0, -1); // remove last / added by paypal
+			$this->printLog("maskedId from url $maskedId");
+			
             $result = new DataObject();
-            if ($this->customerSession->isLoggedIn()) {
-                $orderId = $this->cartManagement->placeOrder($cartId);
-            } else {
-                $quoteIdMask = $this->quoteIdMaskFactory->create()->load($cartId, 'quote_id');
-                $orderId = $this->guestCartManagement->placeOrder($quoteIdMask->getMaskedId());
-            }
+            if ($cartId) {
+				$this->printLog("use quote id from session context");
+				if ($this->customerSession->isLoggedIn()) {
+					$orderId = $this->cartManagement->placeOrder($cartId);
+				} else {
+					$quoteIdMask = $this->quoteIdMaskFactory->create()->load($cartId, 'quote_id');
+					$orderId = $this->guestCartManagement->placeOrder($quoteIdMask->getMaskedId());
+				}
+			} else {
+					// fallback if session context not found after redirect
+					$this->printLog("use quote id from url");					
+					$orderId = $this->guestCartManagement->placeOrder($maskedId);				
+			}
 			$this->printLog("Try to create order for $orderId , $cartId");
 
             if ($orderId) {
