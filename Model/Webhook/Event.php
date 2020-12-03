@@ -18,6 +18,8 @@
 
 namespace Iways\PayPalPlus\Model\Webhook;
 
+use Magento\Sales\Model\Order;
+
 /**
  * Iways PayPalPlus Event Handler
  *
@@ -158,6 +160,7 @@ class Event
                 $paymentResource->amount->total,
                 true
             );
+		if ($this->_order->getState()==Order::STATE_PAYMENT_REVIEW) $this->_order->setState(Order::STATE_PROCESSING)->setStatus(Order::STATE_PROCESSING);
         $this->_order->save();
 
         // notify customer
