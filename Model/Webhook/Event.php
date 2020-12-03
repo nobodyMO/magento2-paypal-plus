@@ -225,8 +225,9 @@ class Event
         $this->_order->getPayment()
             ->setPreparedMessage($webhookEvent->getSummary())
             ->setTransactionId($paymentResource->id)
-            ->setIsTransactionClosed(0)
-            ->registerPaymentReviewAction(\Magento\Sales\Model\Order\Payment::REVIEW_ACTION_UPDATE, false);
+            ->setIsTransactionClosed(0);
+			// registerPaymentReviewAction does no more exists in magento 2.3 so webhook after pending review fails.
+            //->registerPaymentReviewAction(\Magento\Sales\Model\Order\Payment::REVIEW_ACTION_UPDATE, false);
         $this->_order->save();
     }
 
