@@ -53,7 +53,10 @@ class TpmiObserver implements ObserverInterface
         if (isset($groups['iways_paypalplus_section']['groups']['third_party_modul_info'])) {
             $tpmiFields = $groups['iways_paypalplus_section']['groups']['third_party_modul_info']['fields'];
             foreach ($tpmiFields as $key => $value) {
-                $this->writer->save('payment/iways_paypalplus_section/third_party_modul_info_' . $key, $value['value']);
+				if (array_key_exists ('value',$value))
+					$this->writer->save('payment/iways_paypalplus_section/third_party_modul_info_' . $key, $value['value']);
+				else
+					$this->writer->save('payment/iways_paypalplus_section/third_party_modul_info_' . $key, 'null');
             }
         }
 
