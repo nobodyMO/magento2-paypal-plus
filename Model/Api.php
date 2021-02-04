@@ -856,7 +856,11 @@ class Api
     protected function buildAmount($quote)
     {
         $details = new Details();
-        $shippingCost = $quote->getShippingAddress()->getFreeShipping() ? 0 : $quote->getShippingAddress()->getBaseShippingAmount();
+        //$shippingCost = $quote->getShippingAddress()->getFreeShipping() ? 0 : $quote->getShippingAddress()->getBaseShippingAmount();
+	$baseShippingAmount = $quote->getShippingAddress()->getBaseShippingAmount();    
+        $shippingCost = ($quote->getShippingAddress()->getFreeShipping()
+                        ? 0
+                        : ($baseShippingAmount ?: $quote->getShippingAddress()->getShippingAmount()));	    
         $details->setShipping($shippingCost)
             ->setTax(
                 $quote->getShippingAddress()->getBaseTaxAmount()
