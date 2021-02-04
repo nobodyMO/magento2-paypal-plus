@@ -472,7 +472,7 @@ class Api
                     $this->logger->critical($validationMessage); 
 		    throw new \Exception($validationMessage);
                 } else {
-		    throw new \Exception($ex->message);
+		    throw new \Exception($ex->getMessage());
 		}
             }
         }
