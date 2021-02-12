@@ -124,6 +124,7 @@ class GuestPPPPaymentInformationManagement extends PaymentInformationManagement 
                 __($e->getMessage()),
                 $e
             );
+            return false;
         }
         return true;
     }
