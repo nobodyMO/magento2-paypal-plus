@@ -110,6 +110,7 @@ class PPPPaymentInformationManagement extends PaymentInformationManagement imple
                 __($e->getMessage()),
                 $e
             );
+            return false;            
         }
         return true;
     }
