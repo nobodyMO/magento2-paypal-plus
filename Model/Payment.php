@@ -232,7 +232,7 @@ class Payment extends \Magento\Payment\Model\Method\AbstractMethod
 			
 			
         } catch (\Exception $e) {      
-			$this->printLog ("Patch Payment quote error " . $ex->getMessage());		
+			$this->printLog ("Patch Payment quote error " . $e->getMessage());		
 			$this->ppLogger->critical($e);
         }
 
