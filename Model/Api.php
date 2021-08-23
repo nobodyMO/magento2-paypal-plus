@@ -541,7 +541,12 @@ class Api
      */
     public function refundPayment($paymentId, $amount)
     {
-        $transactions = $this->getPayment($paymentId)->getTransactions();
+	    
+        $transactions = [];
+        if (!$transactions = $this->getPayment($paymentId)->getTransactions()) {
+            $saleJson = $this->getSale($paymentId);
+            $transactions = $this->getPayment($saleJson->parent_payment)->getTransactions();
+        }
         $relatedResources = $transactions[0]->getRelatedResources();
         $sale = $relatedResources[0]->getSale();
         $refund = new \PayPal\Api\Refund();
