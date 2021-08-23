@@ -164,6 +164,7 @@ class Create extends \Magento\Framework\App\Action\Action
     public function execute()
     {
         try {
+	    $this->getRequest()->setParams(['ajax' => 1]);
             $cartId = $this->checkoutSession->getQuoteId();		
 			$this->printLog("cartId $cartId");
 			$maskedId=$this->request->getParam('quote_id');
