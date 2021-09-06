@@ -115,12 +115,13 @@ class Payment extends \Magento\Payment\Model\Method\AbstractMethod
      */
     protected $ppLogger;
 
-    /**
+ 
+   /**
      * Protected $quoteFactory
      *
      * @var \Magento\Quote\Api\CartRepositoryInterface
      */
-	protected $quoteFactory;
+	protected $quoteRepository;
 
 /**
      * @var \Magento\Quote\Model\MaskedQuoteIdToQuoteIdInterface
@@ -141,8 +142,8 @@ class Payment extends \Magento\Payment\Model\Method\AbstractMethod
      * @param \Magento\Framework\Api\ExtensionAttributesFactory $extensionFactory
      * @param \Magento\Framework\Api\AttributeValueFactory $customAttributeFactory
      * @param \Magento\Payment\Helper\Data $paymentData
-     * @param \Magento\Quote\Api\CartRepositoryInterface $quoteFactory,		 
      * @param \Magento\Quote\Model\MaskedQuoteIdToQuoteIdInterface $maskedQuoteIdToQuoteId	 
+	 * @param \Magento\Quote\Api\CartRepositoryInterface $quoteRepository
      * @param \Magento\Payment\Model\Method\Logger $logger
      * @param \Magento\Framework\Model\ResourceModel\AbstractResource|null $resource
      * @param \Magento\Framework\Data\Collection\AbstractDb|null $resourceCollection,	
@@ -160,8 +161,8 @@ class Payment extends \Magento\Payment\Model\Method\AbstractMethod
         \Magento\Framework\Api\ExtensionAttributesFactory $extensionFactory,
         \Magento\Framework\Api\AttributeValueFactory $customAttributeFactory,
         \Magento\Payment\Helper\Data $paymentData,
-		\Magento\Quote\Api\CartRepositoryInterface $quoteFactory,
         \Magento\Quote\Model\MaskedQuoteIdToQuoteIdInterface $maskedQuoteIdToQuoteId,		
+		\Magento\Quote\Api\CartRepositoryInterface $quoteRepository,
         \Magento\Payment\Model\Method\Logger $logger,
         \Magento\Framework\Model\ResourceModel\AbstractResource $resource = null,
         \Magento\Framework\Data\Collection\AbstractDb $resourceCollection = null,		
@@ -173,8 +174,8 @@ class Payment extends \Magento\Payment\Model\Method\AbstractMethod
         $this->customerSession = $customerSession;
         $this->payPalPlusHelper = $payPalPlusHelper;
         $this->salesOrderPaymentTransactionFactory = $salesOrderPaymentTransactionFactory;
-		$this->quoteFactory = $quoteFactory;
 		$this->maskedQuoteIdToQuoteId = $maskedQuoteIdToQuoteId;		
+		$this->quoteRepository = $quoteRepository;
         parent::__construct(
             $context,
             $registry,
