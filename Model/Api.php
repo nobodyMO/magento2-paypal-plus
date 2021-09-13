@@ -44,8 +44,6 @@ use PayPal\Api\PatchRequest;
 use PayPal\Api\Patch;
 use PayPal\Api\PaymentExecution;
 use PayPal\Exception\PayPalConnectionException;
-use Zend\Log\Writer\Stream;
-use Zend\Log\Logger;
 
 /**
  * Iways PayPal Rest Api wrapper
@@ -188,7 +186,7 @@ class Api
      * @param \Magento\Framework\Registry $registry
      * @param \Magento\Customer\Model\Session $customerSession
      * @param \Iways\PayPalPlus\Helper\Data $payPalPlusHelper
-     * @param \Psr\Log\LoggerInterface $logger
+     * @param \Zuckerwelt\CustomSales\Logger\Logger $logger
      * @param \Magento\Store\Model\StoreManagerInterface $storeManager
      * @param Webhook\EventFactory $payPalPlusWebhookEventFactory
      * @param \Magento\Checkout\Model\Session $session
@@ -206,7 +204,7 @@ class Api
         \Magento\Framework\Registry $registry,
         \Magento\Customer\Model\Session $customerSession,
         \Iways\PayPalPlus\Helper\Data $payPalPlusHelper,
-        \Psr\Log\LoggerInterface $logger,
+        \Zuckerwelt\CustomSales\Logger\Logger $logger,
         \Magento\Store\Model\StoreManagerInterface $storeManager,
         \Iways\PayPalPlus\Model\Webhook\EventFactory $payPalPlusWebhookEventFactory,
         \Magento\Checkout\Model\Session $checkoutSession,
@@ -1095,10 +1093,7 @@ class Api
     }
 	
 	public function printLog($log) { 
-       $writer = new Stream(BP . '/var/log/checkout.log');
-       $logger = new Logger();
-       $logger->addWriter($writer);
-       $logger->info($log);
+	       $this->logger->info($log);
 	}	
 	
 }
