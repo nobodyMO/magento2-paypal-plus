@@ -25,9 +25,6 @@ use Magento\Sales\Model\Order\Email\Sender\OrderSender;
 use Magento\Sales\Model\OrderFactory;
 use Magento\Framework\App\Request\Http;
 
-use Zend\Log\Writer\Stream;
-use Zend\Log\Logger;
-
 /**
  * PayPalPlus checkout controller
  *
@@ -122,11 +119,12 @@ class Create extends \Magento\Framework\App\Action\Action
      * @var \Magento\Framework\App\Request\Http
      */
 	protected $request;
+
 	
 
     public function __construct(
         \Magento\Framework\App\Action\Context $context,
-        \Psr\Log\LoggerInterface $logger,
+        \Zuckerwelt\CustomSales\Logger\Logger $logger,
         \Magento\Checkout\Model\Session $checkoutSession,
         \Magento\Checkout\Helper\Data $checkoutHelper,
         \Magento\Quote\Api\CartManagementInterface $cartManagement,
@@ -266,10 +264,7 @@ class Create extends \Magento\Framework\App\Action\Action
     }
 	
 	public function printLog($log) { 
-       $writer = new Stream(BP . '/var/log/checkoutSuccess.log');
-       $logger = new Logger();
-       $logger->addWriter($writer);
-       $logger->info($log);
+          $this->logger->info($log);
 	}	
 	
 }
