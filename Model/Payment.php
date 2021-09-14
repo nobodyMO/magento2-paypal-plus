@@ -20,8 +20,6 @@ namespace Iways\PayPalPlus\Model;
 use Iways\PayPalPlus\Block\PaymentInfo;
 use Magento\Framework\DataObject;
 use Magento\Framework\Exception\LocalizedException;
-use Zend\Log\Writer\Stream;
-use Zend\Log\Logger;
 
 
 /**
@@ -145,6 +143,7 @@ class Payment extends \Magento\Payment\Model\Method\AbstractMethod
      * @param \Magento\Quote\Model\MaskedQuoteIdToQuoteIdInterface $maskedQuoteIdToQuoteId	 
 	 * @param \Magento\Quote\Api\CartRepositoryInterface $quoteRepository
      * @param \Magento\Payment\Model\Method\Logger $logger
+	 * @param \Psr\Log\LoggerInterface $logger2
      * @param \Magento\Framework\Model\ResourceModel\AbstractResource|null $resource
      * @param \Magento\Framework\Data\Collection\AbstractDb|null $resourceCollection,	
      * @param array $data
@@ -164,6 +163,7 @@ class Payment extends \Magento\Payment\Model\Method\AbstractMethod
         \Magento\Quote\Model\MaskedQuoteIdToQuoteIdInterface $maskedQuoteIdToQuoteId,		
 		\Magento\Quote\Api\CartRepositoryInterface $quoteRepository,
         \Magento\Payment\Model\Method\Logger $logger,
+		\Psr\Log\LoggerInterface $logger2,
         \Magento\Framework\Model\ResourceModel\AbstractResource $resource = null,
         \Magento\Framework\Data\Collection\AbstractDb $resourceCollection = null,		
         array $data = []
@@ -188,7 +188,8 @@ class Payment extends \Magento\Payment\Model\Method\AbstractMethod
             $resourceCollection,
             $data
         );
-        $this->ppLogger = $context->getLogger();
+        //$this->ppLogger = $context->getLogger();
+		$this->ppLogger = $logger2;
     }
 
     /**
@@ -208,7 +209,7 @@ class Payment extends \Magento\Payment\Model\Method\AbstractMethod
         $maskedQuoteID = $this->request->getParam('quote_id');
 		if (substr($maskedQuoteID, -1)=='/') $maskedQuoteID=substr($maskedQuoteID, 0, -1); // remove last / added by paypal
 		
-		$this->printLog ('Payment authorize for payment ' . $paymentId . ' payerID ' . $payerId . ' quoteID ' .  $maskedQuoteID . ' amount ' . $amount);
+		$this->ppLogger->info ('Payment authorize for payment ' . $paymentId . ' payerID ' . $payerId . ' quoteID ' .  $maskedQuoteID . ' amount ' . $amount);
 
         try {
             if ($this->scopeConfig->getValue(
@@ -223,9 +224,9 @@ class Payment extends \Magento\Payment\Model\Method\AbstractMethod
             }
 			$ppPayment=$this->payPalPlusApiFactory->create()->getPayment($paymentId);
 			$ppAmount=floatval($ppPayment->getTransactions()[0]->getAmount()->getTotal());			
-			$this->printLog ('Payment authorize ppAmount ' .  $ppAmount);
+			$this->ppLogger->info ('Payment authorize ppAmount ' .  $ppAmount);
 			if ($amount!=$ppAmount){
-				$this->printLog ('Payment authorize amount different. Try to patch');
+				$this->ppLogger->info ('Payment authorize amount different. Try to patch');
 				$quoteId=$this->maskedQuoteIdToQuoteId->execute($maskedQuoteID);
 				$quote = $this->quoteRepository->get($quoteId);
 				$this->payPalPlusApiFactory->create()->patchPayment($quote);
@@ -233,7 +234,6 @@ class Payment extends \Magento\Payment\Model\Method\AbstractMethod
 			
 			
         } catch (\Exception $e) {      
-			$this->printLog ("Patch Payment quote error " . $e->getMessage());		
 			$this->ppLogger->critical($e);
         }
 
@@ -345,11 +345,5 @@ class Payment extends \Magento\Payment\Model\Method\AbstractMethod
         return $payment->getLastTransId();
     }
 
-	public function printLog($log) { 
-       $writer = new Stream(BP . '/var/log/checkout.log');
-       $logger = new Logger();
-       $logger->addWriter($writer);
-       $logger->info($log);
-	}	
 	
 }
