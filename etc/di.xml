@@ -29,19 +29,36 @@
     <type name="Magento\Config\Model\Config\Structure\Element\Group">
         <plugin name="dynamic_config_groups" type="Iways\PayPalPlus\Plugin\Config\Structure\Element\Group" />
     </type>
-    
-    <type name="Iways\PayPalPlus\Logger\Handler">
+
+	<!-- Logging -->
+	
+   <type name="Iways\PayPalPlus\Logger\Handler">
         <arguments>
             <argument name="filesystem" xsi:type="object">Magento\Framework\Filesystem\Driver\File</argument>
         </arguments>
     </type>
     <type name="Iways\PayPalPlus\Logger\Logger">
         <arguments>
-            <argument name="name" xsi:type="string">PPPLogger</argument>
+            <argument name="name" xsi:type="string">pppLogger</argument>
             <argument name="handlers"  xsi:type="array">
                 <item name="system" xsi:type="object">Iways\PayPalPlus\Logger\Handler</item>
             </argument>
         </arguments>
     </type>
-    
+	<type name="Iways\PayPalPlus\Model\Payment">
+        <arguments>
+            <argument name="logger2" xsi:type="object">Iways\PayPalPlus\Logger\Logger</argument>
+        </arguments>
+    </type>
+	<type name="Iways\PayPalPlus\Model\Api">
+        <arguments>
+            <argument name="logger" xsi:type="object">Iways\PayPalPlus\Logger\Logger</argument>
+        </arguments>
+    </type>
+	<type name="Iways\PayPalPlus\Controller\Order\Create">
+        <arguments>
+            <argument name="logger" xsi:type="object">Iways\PayPalPlus\Logger\Logger</argument>
+        </arguments>
+    </type>
+	
 </config>
