@@ -119,12 +119,11 @@ class Create extends \Magento\Framework\App\Action\Action
      * @var \Magento\Framework\App\Request\Http
      */
 	protected $request;
-
 	
 
     public function __construct(
         \Magento\Framework\App\Action\Context $context,
-        \Zuckerwelt\CustomSales\Logger\Logger $logger,
+        \Psr\Log\LoggerInterface $logger,
         \Magento\Checkout\Model\Session $checkoutSession,
         \Magento\Checkout\Helper\Data $checkoutHelper,
         \Magento\Quote\Api\CartManagementInterface $cartManagement,
@@ -164,14 +163,14 @@ class Create extends \Magento\Framework\App\Action\Action
         try {
 	    $this->getRequest()->setParams(['ajax' => 1]);
             $cartId = $this->checkoutSession->getQuoteId();		
-			$this->printLog("cartId $cartId");
+			$this->logger->info("cartId $cartId");
 			$maskedId=$this->request->getParam('quote_id');
 			if (substr($maskedId, -1)=='/') $maskedId=substr($maskedId, 0, -1); // remove last / added by paypal
-			$this->printLog("maskedId from url $maskedId");
+			$this->logger->info("maskedId from url $maskedId");
 			
             $result = new DataObject();
             if ($cartId) {
-				$this->printLog("use quote id from session context");
+				$this->logger->info("use quote id from session context");
 				if ($this->customerSession->isLoggedIn()) {
 					$orderId = $this->cartManagement->placeOrder($cartId);
 				} else {
@@ -180,10 +179,10 @@ class Create extends \Magento\Framework\App\Action\Action
 				}
 			} else {
 					// fallback if session context not found after redirect
-					$this->printLog("use quote id from url");					
+					$this->logger->info("use quote id from url");					
 					$orderId = $this->guestCartManagement->placeOrder($maskedId);				
 			}
-			$this->printLog("Try to create order for $orderId , $cartId");
+			$this->logger->info("Try to create order for $orderId , $cartId");
 
             if ($orderId) {
                 $order = $this->orderFactory->create()->load($orderId);
@@ -194,12 +193,11 @@ class Create extends \Magento\Framework\App\Action\Action
 						// MK Fix multiple confirmation mails
 						if (!$order->getEmailSent()) {
 							$this->orderSender->send($order);
-							$this->printLog('Send Mail for (Create.php)');
+							$this->logger->info('Send Mail for (Create.php)');
 						} else {
-							$this->printLog('Order already sent (Create.php)');						
+							$this->logger->info('Order already sent (Create.php)');						
 						}
                     } catch (\Exception $e) {
-						$this->printLog("Caught $e");
                         $this->logger->critical($e);
                     }
                 }
@@ -221,8 +219,7 @@ class Create extends \Magento\Framework\App\Action\Action
                         }
                     }
                 } catch (\Exception $e) {
-					$this->printLog("Caught $e");
-                    $this->logger->log($e);
+                    $this->logger->error($e);
                 }
             }
 			// MK Fix success page
@@ -233,9 +230,9 @@ class Create extends \Magento\Framework\App\Action\Action
 			$this->checkoutSession->setLastRealOrderId($order->getIncrementId());
 			$this->checkoutSession->setLastOrderStatus($order->getStatus());
 			
-			$this->printLog('C:getLastSuccessQuoteId:'.$this->checkoutSession->getLastSuccessQuoteId());
-			$this->printLog('C:getLastQuoteId:'.$this->checkoutSession->getLastQuoteId());
-			$this->printLog('C:getLastOrderId:'.$this->checkoutSession->getLastOrderId());
+			$this->logger->info('C:getLastSuccessQuoteId:'.$this->checkoutSession->getLastSuccessQuoteId());
+			$this->logger->info('C:getLastQuoteId:'.$this->checkoutSession->getLastQuoteId());
+			$this->logger->info('C:getLastOrderId:'.$this->checkoutSession->getLastOrderId());
 			
             $result->setData('success', true);
             $result->setData('error', false);
@@ -253,7 +250,7 @@ class Create extends \Magento\Framework\App\Action\Action
 			return $response;			
             //$this->_redirect('checkout/onepage/success');
         } catch (\Exception $e) {
- 			$this->printLog("Caught $e");
+ 			$this->logger->critical("Caught $e");
             $this->messageManager->addError($e->getMessage());
 			$response = $this->_responseFactory->create();
 			$response->setRedirect('/checkout/cart');
@@ -262,9 +259,5 @@ class Create extends \Magento\Framework\App\Action\Action
             //$this->_redirect('checkout/cart');
         }
     }
-	
-	public function printLog($log) { 
-          $this->logger->info($log);
-	}	
-	
+		
 }
