@@ -186,7 +186,7 @@ class Api
      * @param \Magento\Framework\Registry $registry
      * @param \Magento\Customer\Model\Session $customerSession
      * @param \Iways\PayPalPlus\Helper\Data $payPalPlusHelper
-     * @param \Zuckerwelt\CustomSales\Logger\Logger $logger
+     * @param \Psr\Log\LoggerInterface $logger
      * @param \Magento\Store\Model\StoreManagerInterface $storeManager
      * @param Webhook\EventFactory $payPalPlusWebhookEventFactory
      * @param \Magento\Checkout\Model\Session $session
@@ -204,7 +204,7 @@ class Api
         \Magento\Framework\Registry $registry,
         \Magento\Customer\Model\Session $customerSession,
         \Iways\PayPalPlus\Helper\Data $payPalPlusHelper,
-        \Zuckerwelt\CustomSales\Logger\Logger $logger,
+        \Psr\Log\LoggerInterface $logger,
         \Magento\Store\Model\StoreManagerInterface $storeManager,
         \Iways\PayPalPlus\Model\Webhook\EventFactory $payPalPlusWebhookEventFactory,
         \Magento\Checkout\Model\Session $checkoutSession,
@@ -339,7 +339,7 @@ class Api
 		$maskedId = null;
         try {
             $maskedId = $this->quoteIdToMaskedQuoteId->execute($quote->getId());
-			$this->printLog ("maskedId: " . $maskedId . " quoteId " . $quote->getId());
+			$this->logger->info ("maskedId: " . $maskedId . " quoteId " . $quote->getId());
 			
         } catch (NoSuchEntityException $exception) {
             throw new LocalizedException(__('Current user does not have an active cart.'));
@@ -923,7 +923,7 @@ class Api
 			
 			$newdiscount=round((-1)*($amount->getTotal() - $oldSubTotal - $shipping - $tax - $handlingFee - $insurance),2);
 			$amount->getDetails()-> setShippingDiscount($newdiscount);
-			$this->printLog ("Correct ShippingDiscount Total: " . $amount->getTotal() . " from " . $olddiscount . " to " . $newdiscount . " Subtotal: " . $oldSubTotal . " Tax: " . $tax );
+			$this->logger->info ("Correct ShippingDiscount Total: " . $amount->getTotal() . " from " . $olddiscount . " to " . $newdiscount . " Subtotal: " . $oldSubTotal . " Tax: " . $tax );
 		}
 
         return $amount;
@@ -1091,9 +1091,5 @@ class Api
             return false;
         }
     }
-	
-	public function printLog($log) { 
-	       $this->logger->info($log);
-	}	
-	
+		
 }
