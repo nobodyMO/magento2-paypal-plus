@@ -1,5 +1,5 @@
 <?php
-namespace Iways\PayPalPlusLogger;
+namespace Iways\PayPalPlus\Logger;
 
 use Monolog\Logger;
 
