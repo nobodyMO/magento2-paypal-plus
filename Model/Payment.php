@@ -230,6 +230,14 @@ class Payment extends \Magento\Payment\Model\Method\AbstractMethod
 				$quoteId=$this->maskedQuoteIdToQuoteId->execute($maskedQuoteID);
 				$quote = $this->quoteRepository->get($quoteId);
 				$this->payPalPlusApiFactory->create()->patchPayment($quote);
+				$ppAmount=floatval($ppPayment->getTransactions()[0]->getAmount()->getTotal());
+				if ($amount!=$ppAmount){
+					$this->ppLogger->info ('Patch failed. Abort order creation. ppAmount ' .  $ppAmount);
+					throw new LocalizedException(
+						__('Payment could not be executed.')
+					);
+					
+				}
 			}
 			
 			
