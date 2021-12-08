@@ -207,6 +207,7 @@ class Payment extends \Magento\Payment\Model\Method\AbstractMethod
         $paymentId = $this->request->getParam('paymentId');
         $payerId = $this->request->getParam('PayerID');
         $maskedQuoteID = $this->request->getParam('quote_id');
+		$quoteOK=true;
 		if (substr($maskedQuoteID, -1)=='/') $maskedQuoteID=substr($maskedQuoteID, 0, -1); // remove last / added by paypal
 		
 		$this->ppLogger->info ('Payment authorize for payment ' . $paymentId . ' payerID ' . $payerId . ' quoteID ' .  $maskedQuoteID . ' amount ' . $amount);
@@ -233,9 +234,7 @@ class Payment extends \Magento\Payment\Model\Method\AbstractMethod
 				$ppAmount=floatval($ppPayment->getTransactions()[0]->getAmount()->getTotal());
 				if ($amount!=$ppAmount){
 					$this->ppLogger->info ('Patch failed. Abort order creation. ppAmount ' .  $ppAmount);
-					throw new LocalizedException(
-						__('Payment could not be executed.')
-					);
+					$quoteOK=false;
 					
 				}
 			}
@@ -243,6 +242,12 @@ class Payment extends \Magento\Payment\Model\Method\AbstractMethod
 			
         } catch (\Exception $e) {      
 			$this->ppLogger->critical($e);
+        }
+
+        if (!$quoteOK) {
+            throw new LocalizedException(
+                __('Payment could not be executed.')
+            );
         }
 
         $ppPayment = $this->payPalPlusApiFactory->create()->executePayment(
