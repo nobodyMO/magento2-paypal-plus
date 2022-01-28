@@ -245,10 +245,12 @@ class Payment extends \Magento\Payment\Model\Method\AbstractMethod
         }
 
         if (!$quoteOK) {
+			$this->ppLogger->info ('Throw exeption Payment could not be executed.');
             throw new LocalizedException(
                 __('Payment could not be executed.')
             );
         }
+		$this->ppLogger->info ('Start execute payment');
 
         $ppPayment = $this->payPalPlusApiFactory->create()->executePayment(
             $paymentId,
